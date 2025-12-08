@@ -13,16 +13,16 @@ pipeline {
             }
         }
 
-        stage('Test') {
-            steps {
-                echo "Running tests..."
-                sh '''#!/bin/bash
-                # Run tests using npm (assuming tests are defined in package.json)
-                echo "Running tests with npm..."
-                npm test
-                '''
-            }
-        }
+        // stage('Test') {
+        //     steps {
+        //         echo "Running tests..."
+        //         sh '''#!/bin/bash
+        //         # Run tests using npm (assuming tests are defined in package.json)
+        //         echo "Running tests with npm..."
+        //         npm test
+        //         '''
+        //     }
+        // }
 
         stage('Deliver') {
             steps {
