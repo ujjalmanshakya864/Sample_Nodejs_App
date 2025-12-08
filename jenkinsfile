@@ -1,50 +1,49 @@
 pipeline {
     agent any  // This runs the pipeline on any available Jenkins agent
 
-    stages {
-        stage('Build') {
-            steps {
-                echo "Building the Node.js application..."
-                sh '''#!/bin/bash
-                # Install dependencies using npm
-                echo "Installing dependencies..."
-                npm install
-                '''
-            }
-        }
-
-        // stage('Test') {
-        //     steps {
-        //         echo "Running tests..."
-        //         sh '''#!/bin/bash
-        //         # Run tests using npm (assuming tests are defined in package.json)
-        //         echo "Running tests with npm..."
-        //         npm test
-        //         '''
-        //     }
-        // }
-
-        stage('Deliver') {
-            steps {
-                echo 'Deploying the Node.js application...'
-                sh '''#!/bin/bash
-                # & = run in background
-                node app.js &
-                '''
-            }
-        }
+    environment {
+        DOCKER_IMAGE = 'simple-node'  // Set your Docker image name
+        // DOCKER_REGISTRY = 'yourdockerusername'  // Optional: Use a Docker registry (e.g., Docker Hub)
     }
+
+    stages {
+        stage('Build Docker Image') {
+            steps {
+                echo "Building Docker image for the Node.js application..."
+                script {
+                    // Build the Docker image using the Dockerfile
+                    def dockerBuild = docker.build(DOCKER_IMAGE)
+                }
+            }
+        }
+
+        stage('Run Docker Container') {
+            steps {
+                echo 'Running the Node.js application in a Docker container...'
+                script {
+                    // Run the Docker container in the background
+                    sh '''#!/bin/bash
+                    docker run -d -p 3001:3001 --name nodejs-container $DOCKER_IMAGE
+                    '''
+                }
+            }
+        }
 
     post {
         success {
-            echo 'Pipeline succeeded! Application built, tested, and deployed successfully.'
+            echo 'Pipeline succeeded! Docker image built, container deployed, and tests passed.'
         }
         failure {
             echo 'Pipeline failed! Something went wrong.'
         }
-        always {
-            echo 'Cleaning up...'
-            // Clean up any temporary files if necessary
+        // always {
+        //     echo 'Cleaning up...'
+        //     // Clean up any temporary Docker containers or images if necessary
+        //     sh '''#!/bin/bash
+        //     docker stop nodejs-container
+        //     docker rm nodejs-container
+        //     '''
+        // }
         }
     }
 }

@@ -1,0 +1,50 @@
+pipeline {
+    agent any  // This runs the pipeline on any available Jenkins agent
+
+    stages {
+        stage('Build') {
+            steps {
+                echo "Building the Node.js application..."
+                sh '''#!/bin/bash
+                # Install dependencies using npm
+                echo "Installing dependencies..."
+                npm install
+                '''
+            }
+        }
+
+        // stage('Test') {
+        //     steps {
+        //         echo "Running tests..."
+        //         sh '''#!/bin/bash
+        //         # Run tests using npm (assuming tests are defined in package.json)
+        //         echo "Running tests with npm..."
+        //         npm test
+        //         '''
+        //     }
+        // }
+
+        stage('Deliver') {
+            steps {
+                echo 'Deploying the Node.js application...'
+                sh '''#!/bin/bash
+                # & = run in background
+                node app.js &
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline succeeded! Application built, tested, and deployed successfully.'
+        }
+        failure {
+            echo 'Pipeline failed! Something went wrong.'
+        }
+        always {
+            echo 'Cleaning up...'
+            // Clean up any temporary files if necessary
+        }
+    }
+}
