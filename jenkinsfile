@@ -28,7 +28,8 @@ pipeline {
             steps {
                 echo 'Deploying the Node.js application...'
                 sh '''#!/bin/bash
-                node app.js
+                # & = run in background
+                node app.js &
                 '''
             }
         }
