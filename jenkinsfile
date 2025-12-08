@@ -28,6 +28,7 @@ pipeline {
                 }
             }
         }
+    }
 
     post {
         success {
@@ -44,6 +45,5 @@ pipeline {
         //     docker rm nodejs-container
         //     '''
         // }
-        }
     }
 }
