@@ -1,4 +1,4 @@
 # Steps after Git Pull
 
 * npm install
-* npm run dev
+* node app.js
