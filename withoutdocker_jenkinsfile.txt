@@ -1,4 +1,3 @@
-testtest
 pipeline {
     agent any  // This runs the pipeline on any available Jenkins agent
 
