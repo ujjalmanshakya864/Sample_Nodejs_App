@@ -1,49 +1,106 @@
 pipeline {
-    agent any  // This runs the pipeline on any available Jenkins agent
+    agent { label 'AWS-EC2-Agent' }
+
+    triggers {
+        githubPush()
+    }
 
     environment {
-        DOCKER_IMAGE = 'simple-node'  // Set your Docker image name
-        // DOCKER_REGISTRY = 'yourdockerusername'  // Optional: Use a Docker registry (e.g., Docker Hub)
+        DOCKER_IMAGE = 'simple-node'
+        CONTAINER_NAME = 'nodejs-container'
     }
 
     stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
-                echo "Building Docker image for the Node.js application..."
+                echo 'Building Docker image...'
                 script {
-                    // Build the Docker image using the Dockerfile
-                    def dockerBuild = docker.build(DOCKER_IMAGE)
+                    docker.build(DOCKER_IMAGE)
                 }
             }
         }
 
         stage('Run Docker Container') {
             steps {
-                echo 'Running the Node.js application in a Docker container...'
-                script {
-                    // Run the Docker container in the background
-                    sh '''#!/bin/bash
-                    docker run -d -p 3001:3001 --name nodejs-container $DOCKER_IMAGE
-                    '''
-                }
+                echo 'Running Docker container...'
+                sh '''
+                #!/bin/bash
+                # Stop & remove existing container if it exists
+                docker stop $CONTAINER_NAME || true
+                docker rm $CONTAINER_NAME || true
+
+                # Run new container
+                docker run -d \
+                  -p 3001:3001 \
+                  --name $CONTAINER_NAME \
+                  $DOCKER_IMAGE
+                '''
             }
         }
     }
 
     post {
         success {
-            echo 'Pipeline succeeded! Docker image built, container deployed, and tests passed.'
+            echo 'Pipeline succeeded!'
         }
         failure {
-            echo 'Pipeline failed! Something went wrong.'
+            echo 'Pipeline failed'
         }
-        // always {
-        //     echo 'Cleaning up...'
-        //     // Clean up any temporary Docker containers or images if necessary
-        //     sh '''#!/bin/bash
-        //     docker stop nodejs-container
-        //     docker rm nodejs-container
-        //     '''
-        // }
     }
 }
+// pipeline {
+//     agent any  // This runs the pipeline on any available Jenkins agent
+
+//     environment {
+//         DOCKER_IMAGE = 'simple-node'  // Set your Docker image name
+//         // DOCKER_REGISTRY = 'yourdockerusername'  // Optional: Use a Docker registry (e.g., Docker Hub)
+//     }
+
+//     stages {
+//         stage('Build Docker Image') {
+//             steps {
+//                 echo "Building Docker image for the Node.js application..."
+//                 script {
+//                     // Build the Docker image using the Dockerfile
+//                     def dockerBuild = docker.build(DOCKER_IMAGE)
+//                 }
+//             }
+//         }
+
+//         stage('Run Docker Container') {
+//             steps {
+//                 echo 'Running the Node.js application in a Docker container...'
+//                 script {
+//                     // Run the Docker container in the background
+//                     sh '''#!/bin/bash
+//                     docker run -d -p 3001:3001 --name nodejs-container $DOCKER_IMAGE
+//                     '''
+//                 }
+//             }
+//         }
+//     }
+
+//     post {
+//         success {
+//             echo 'Pipeline succeeded! Docker image built, container deployed, and tests passed.'
+//         }
+//         failure {
+//             echo 'Pipeline failed! Something went wrong.'
+//         }
+//         // always {
+//         //     echo 'Cleaning up...'
+//         //     // Clean up any temporary Docker containers or images if necessary
+//         //     sh '''#!/bin/bash
+//         //     docker stop nodejs-container
+//         //     docker rm nodejs-container
+//         //     '''
+//         // }
+//     }
+// }
